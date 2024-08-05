@@ -1,13 +1,13 @@
 import Image from "next/image";
 
-export const ButterFlySide = ({
+export const Palm2 = ({
   w = 100,
   h = 100,
   t,
   b,
   l,
   r,
-  rt = false,
+  rt ,
 }: {
   w: number;
   h: number;
@@ -15,7 +15,7 @@ export const ButterFlySide = ({
   b?: string;
   l?: string;
   r?: string;
-  rt?: boolean;
+  rt?: number;
 }) => {
   const style = {
     top: t,
@@ -27,9 +27,9 @@ export const ButterFlySide = ({
   return (
     <>
       <Image
-        width={500}
-        height={500}
-        src="/butterfly-side.png"
+        width={w}
+        height={h}
+        src="/palma2.svg"
         alt=""
         className=""
         style={{
@@ -37,7 +37,7 @@ export const ButterFlySide = ({
           ...style,
           width: w,
           height: "auto",
-          transform: rt ? "rotate(310deg)" : "rotate(0deg)",
+          transform: rt ? `rotate(${rt}deg)` : "rotate(0deg)",
         }}
       />
     </>

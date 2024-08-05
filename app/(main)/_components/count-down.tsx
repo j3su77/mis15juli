@@ -46,12 +46,16 @@ export const CountDown = () => {
   };
 
   return (
-    <div className="relative flex flex-col z-40 min-h-[500px]">
+    <div className="relative flex flex-col z-40 min-h-[500px] text-primary">
+      <div className="text-center object-fill flex flex-col justify-center items-center">
+        <p className="text-3xl z-50">Día:</p>
+       
+        <p className="text-4xl">  23 de agosto del 2024</p>
+        
+      </div>
       <div className="text-center object-fill flex-1 flex flex-col justify-center items-center">
-      <p className="text-3xl z-50">
-          Faltan:
-        </p>
-        <Cloud w={600} h={300} t="20px" l="0px" r="0px" className="mx-auto" />
+        <p className="text-3xl z-50">Faltan:</p>
+        {/* <Cloud w={600} h={300} t="20px" l="0px" r="0px" className="mx-auto" /> */}
         {isClient && (
           <div
             className="relative flex gap-2 p-6 justify-center px-3 h-fit"
@@ -64,9 +68,9 @@ export const CountDown = () => {
           </div>
         )}
 
-        <p className="text-3xl z-50">
+        {/* <p className="text-3xl z-50">
           Para mis <span className="text-red-900 font-semibold ">{15}</span>.
-        </p>
+        </p> */}
       </div>
     </div>
   );

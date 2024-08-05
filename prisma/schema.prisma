@@ -29,11 +29,11 @@ model Guest {
   id             String   @id @default(uuid())
   firstName      String?
   lastName       String?
-  relationship   String
+  // relationship   String
   invitationCode String   @unique
   confirmed      Boolean  @default(false) // Campo de confirmación añadido
   hasResponded   Boolean  @default(false)
-  message        String?  @db.Text
+  // message        String?  @db.Text
   active         Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

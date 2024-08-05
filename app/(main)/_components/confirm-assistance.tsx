@@ -1,7 +1,12 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import axios from "axios";
+import confetti from "canvas-confetti";
+import { Guest } from "@prisma/client";
+import { toast } from "@/components/ui/use-toast";
+import { SimpleModal } from "@/components/simple-modal";
 import {
   Form,
   FormControl,
@@ -10,19 +15,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import axios from "axios";
-import { Guest } from "@prisma/client";
 import { Textarea } from "@/components/ui/textarea";
-import { SimpleModal } from "@/components/simple-modal";
-import { toast } from "@/components/ui/use-toast";
-import confetti from "canvas-confetti";
+import { Button } from "@/components/ui/button";
 
 const MAX_MESSAGE_LENGTH = 200;
 
 const formSchema = z.object({
-  message: z.string().max(MAX_MESSAGE_LENGTH).optional(),
+  // message: z.string().max(MAX_MESSAGE_LENGTH).optional(),
   confirmed: z.boolean().nullable(),
 });
 
@@ -36,24 +36,28 @@ export const ConfirmAssistance = ({
   onClose: () => void;
 }) => {
   const [openModal, setOpenModal] = useState(confirmAssistance);
+  const [guestData, setGuestData] = useState<Guest>(guest);
 
   useEffect(() => {
     setOpenModal(confirmAssistance);
   }, [confirmAssistance]);
-  useEffect(() => {
-    guest.confirmed && startConffeti()
-  }, [guest]);
 
-  const [messageLength, setMessageLength] = useState(
-    guest.message?.length || 0
-  );
+  useEffect(() => {
+    if (guestData.hasResponded && guestData.confirmed) startConffeti();
+  }, [guestData]);
+
+  // const [messageLength, setMessageLength] = useState(
+  //   guestData.message?.length || 0
+  // );
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      confirmed: guest.confirmed || null,
-      message: guest.message || "",
+      confirmed: guestData.confirmed || null,
+      // message: guestData.message || "",
     },
   });
+
   const { watch, setValue } = form;
   const confirmed = watch("confirmed");
 
@@ -61,32 +65,34 @@ export const ConfirmAssistance = ({
     setValue("confirmed", value);
   };
 
-  const handleMessageChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= MAX_MESSAGE_LENGTH) {
-      setValue("message", value);
-      setMessageLength(value.length);
-    }
-  };
+  // const handleMessageChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  //   const value = e.target.value;
+  //   if (value.length <= MAX_MESSAGE_LENGTH) {
+  //     setValue("message", value);
+  //     // setMessageLength(value.length);
+  //   }
+  // };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await axios.post("/api/confirm", {
-        guestId: guest.id,
+      const { data } = await axios.post("/api/confirm", {
+        guestId: guestData.id,
         confirmed: values.confirmed,
-        message: values.message,
+        // message: values.message,
       });
       toast({
         description: "Gracias por responder",
       });
-      startConffeti()
+      setGuestData(data);
+      if (data.hasResponded) {
+        setOpenModal(true);
+        startConffeti();
+      }
     } catch (error) {
       console.error("Error confirming attendance:", error);
       toast({
-        description: "Ocurrió un error, por favor intentelo nuevamente",
+        description: "Ocurrió un error, por favor inténtelo nuevamente",
       });
-    } finally {
-      onClose();
     }
   }
 
@@ -100,56 +106,65 @@ export const ConfirmAssistance = ({
       origin: { y: 0.6 },
     };
 
-    confetti({
-      ...defaults,
-      particleCount: 100,
-    });
-
-    confetti({
-      ...defaults,
-      particleCount: 75,
-    });
-
-    confetti({
-      ...defaults,
-      particleCount: 30,
-    });
+    confetti({ ...defaults, particleCount: 100 });
+    confetti({ ...defaults, particleCount: 75 });
+    confetti({ ...defaults, particleCount: 30 });
   };
 
   return (
     <SimpleModal
       openDefault={openModal}
-      title={guest.hasResponded ?  guest.confirmed ? "¡Que genial 😁!" : "¡Hola!" : ""}
-      large={!guest.hasResponded}
+      title={
+        !!guestData.hasResponded
+          ? guestData.confirmed
+            ? "¡Que genial 😁!"
+            : "¡Hola!"
+          : ""
+      }
+      large={!guestData.hasResponded}
       btnClass="hidden"
-      notClose={!guest.hasResponded}
+      notClose={!guestData.hasResponded}
       onClose={onClose}
     >
       <div>
-        {guest.hasResponded ? (
+        {!!guestData.hasResponded ? (
           <div>
-            <h2 className="text-xl font-bold">
-             {
-              guest.confirmed ? (
-                <div>
-                    Hola {guest.relationship} {guest?.firstName} {guest?.lastName}, gracias por confirmar
-              tu asistencia a mi fiesta de 15, te espero.
-                </div>
-              ) : (
-                <div>
-                   Hola {guest.relationship} {guest?.firstName} {guest?.lastName}, aunque no puedas asistir a mi fiesta, sabes que te quiero mucho 😘
-                </div>
-              )
-             }
-              <span className="mt-5 block"> con mucho cariño</span>
-              <span className="mt-2 block font-bold"> Julianis❤️</span>
-            </h2>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-3 items-center justify-center w-full space-y-8"
+              >
+                <h2 className="text-xl font-bold">
+                  {!guestData.confirmed && (
+                    <div>
+                      Hola {guestData.firstName}{" "}
+                      {guestData.lastName}, aunque no puedas asistir a mi
+                      fiesta, sabes que te quiero mucho 😘
+                      <span className="mt-5 block">con mucho cariño</span>
+                      <span className="mt-2 block font-bold">Julianis❤️</span>
+                    </div>
+                  )}
+                </h2>
+
+                {guestData.confirmed && (
+                  <>
+                  <div>
+                    Hola {guestData.firstName}{" "}
+                    {guestData.lastName}, gracias por confirmar tu asistencia a
+                    mi fiesta de 15, te espero.
+                  </div>
+                   
+             
+                  </>
+                )}
+              </form>
+            </Form>
           </div>
         ) : (
           <div>
-            <h2 className="text-xl font-bold">
-              Hola, {guest?.firstName} {guest?.lastName} queremos invitarte a mi
-              fiesta de 15 años
+            <h2 className="text-2xl font-bold text-center">
+              Hola {guestData.firstName}{" "}
+              {guestData.lastName}, queremos invitarte a mi fiesta de 15 años
             </h2>
             <Form {...form}>
               <form
@@ -187,36 +202,7 @@ export const ConfirmAssistance = ({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem
-                      className={`flex flex-col items-center ${
-                        confirmed !== null ? "flex" : "hidden"
-                      }`}
-                    >
-                      <FormLabel className="block text-center text-lg font-semibold">
-                        {confirmed
-                          ? "Deja tu mensaje:"
-                          : "¿Por qué no puedes asistir?"}
-                        <span className="font-normal">(Opcional):</span>
-                      </FormLabel>
-                      <FormControl className="flex justify-center w-full">
-                        <Textarea
-                          {...field}
-                          onChange={(e) => handleMessageChange(e)}
-                          placeholder=""
-                          className=" text-base"
-                        />
-                      </FormControl>
-                      <div className="text-right w-full text-sm text-gray-500">
-                        {messageLength}/{MAX_MESSAGE_LENGTH}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+             
                 <Button
                   disabled={confirmed === null}
                   className=""

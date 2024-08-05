@@ -17,11 +17,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SimpleModal } from "@/components/simple-modal";
 import { useState } from "react";
-import { ButterFly } from "@/components/butterfly";
 import { ConfirmAssistance } from "./confirm-assistance";
 import axios from "axios";
 import { Guest } from "@prisma/client";
 import { toast } from "@/components/ui/use-toast";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Flower } from "@/components/flower";
 
 const formSchema = z.object({
   code: z.string().min(2, {
@@ -86,11 +91,11 @@ export const Invitation = () => {
       style={{ position: "relative" }}
     >
       <Card className=" relative max-w-xl w-full bg-secondary border-4 border-white">
-        <ButterFly h={100} w={100} r="-50px" t="-50px" />
+        <Flower h={100} w={100} r="-50px" t="-50px" />
         <CardHeader>
           <h2 className="text-center font-bold text-2xl">CONFIRMACIÓN</h2>
           <span className="text-primary block text-center">
-            INGRESA tu codigo de invitación
+            Escribe tu codigo de invitación
           </span>
         </CardHeader>
         <CardContent className="flex justify-center ">
@@ -103,16 +108,17 @@ export const Invitation = () => {
                 control={form.control}
                 name="code"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col items-center">
-                    <FormLabel className="block text-center text-lg">
-                      Código:
-                    </FormLabel>
-                    <FormControl className="flex justify-center w-full">
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="w-36 text-2xl"
-                      />
+                  <FormItem>
+                    <FormControl>
+                      <InputOTP maxLength={6} {...field}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                        </InputOTPGroup>
+                      </InputOTP>
                     </FormControl>
 
                     <FormMessage />

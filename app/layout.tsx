@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, The_Girl_Next_Door } from "next/font/google";
+import { Inter, Pacifico, The_Girl_Next_Door } from "next/font/google";
 import "./globals.css";
+import "react-photo-album/rows.css";
 import { cn } from "../lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import { NextAuthProvider } from "@/components/providers/next-auth-provider";
+
 const inter = Inter({ subsets: ["latin"] });
+const pacifico = Pacifico({
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
 const girl = The_Girl_Next_Door({
   weight: ["400"],
   preload: false,
@@ -20,11 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={cn(girl.className, "bg-muted")}>
-        <main> {children}</main>
-        <Toaster  />
-      </body>
-    </html>
+    <NextAuthProvider>
+      <html lang="es">
+        <body className={cn(pacifico.className, "bg-muted")}>
+          <main> {children}</main>
+          <Toaster />
+        </body>
+      </html>
+    </NextAuthProvider>
   );
 }
